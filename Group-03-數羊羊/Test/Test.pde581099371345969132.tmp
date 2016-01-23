@@ -1,0 +1,81 @@
+Start start;
+Jones jones;
+Obstacle obstacles;
+Sheep [] sheeps;
+Background background;
+Ground ground;
+ScoringBoard scoringBoard;
+float groundHeight=60;
+
+int gameState;
+final int GAME_START =0;
+final int GAME_RUN =1;
+  
+void setup(){
+  size(640,480);
+  start= new Start();
+  jones= new Jones();
+  obstacles= new Obstacle("fence.png");
+  sheeps = new Sheep[11];
+  for(int i=0; i<sheeps.length; i++){
+    sheeps[i] = new Sheep(i*400);
+  }
+  background = new Background();
+  scoringBoard = new ScoringBoard();
+  groundHeight=60;
+    
+}
+
+void draw(){
+  switch(gameState){
+    case GAME_START:
+    start.bgDisplay();
+    start.wordDisplay();
+    start.sheepDisplay();
+    break;
+    case GAME_RUN:
+  background.display();
+  obstacles.display();
+  obstacles.move();
+  if(jones.alive()){
+    jones.getStuck();
+    jones.display();
+    jones.backToPosition();
+    jones.capture();
+  }
+  jones.falling();
+  
+  for(int i=0; i<sheeps.length; i++){
+  if(sheeps[i].alive()){
+    sheeps[i].display();
+    sheeps[i].move();
+    sheeps[i].followJones();
+  }
+  if(sheeps[i].alive()==false){
+    sheeps[i].sheepBeSubtracted = true;
+  }
+  sheeps[i].falling();
+  }
+  
+  scoringBoard.showSheepNum();
+  scoringBoard.sheepNumChange();
+  break;
+  }
+}
+
+void keyPressed(){
+  if(key==ENTER){
+    jones.jump();
+  }
+}
+
+
+boolean isCollide(float ax, float ay, int aw, int ah, float bx, float by, int bw, int bh) {
+  boolean collisionX = (ax + aw >= bx) && (bx + bw >= ax);
+  boolean collisionY = (ay + ah >= by) && (by + bh >= ay);
+  if (collisionX && collisionY) {
+    return true;
+  } else {
+    return false;
+  }
+}

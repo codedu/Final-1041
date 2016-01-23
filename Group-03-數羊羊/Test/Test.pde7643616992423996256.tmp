@@ -1,0 +1,283 @@
+import ddf.minim.*;
+
+Minim minim;
+AudioPlayer song;
+
+Start start;
+Story story;
+Rule1 rule1;
+Rule2 rule2;
+Rule3 rule3;
+Level level1;
+Level level2;
+Level level3;
+Pass pass;
+Lose lose;
+Jones jones;
+Obstacle obstacles;
+Sheep [] sheeps;
+Background background1;
+Background_2 background2;
+Background background3;
+Ground ground;
+ScoringBoard scoringBoard;
+float groundHeight=60;
+
+int gameState;
+final int GAME_START =0;
+final int GAME_STORY =1;
+final int GAME_RULE1 =2;
+final int GAME_RULE2 =3;
+final int GAME_RULE3 =4;
+final int GAME_RUN =5;
+final int GAME_FAIL=6;
+final int GAME_END =7;
+
+int stage ;
+final int STAGE_1 =0;
+final int STAGE_2 =1;
+final int STAGE_3 =2;
+
+int count=0;
+
+  
+void setup(){
+  size(640,480);
+  start= new Start();
+  story= new Story();
+  rule1= new Rule1();
+  rule2= new Rule2();
+  rule3= new Rule3();
+  level1= new Level("level1.png");
+  level2= new Level("level2.png");
+  level3= new Level("level3.png");
+  lose= new Lose();
+  jones= new Jones();
+  obstacles= new Obstacle("fence.png");
+  sheeps = new Sheep[11];
+  for(int i=0; i<sheeps.length; i++){
+    sheeps[i] = new Sheep((i+1)*1400);
+  }
+  background1 = new Background("bg1_1.png","bg1_2.png");
+  background2 = new Background_2();
+  background3 = new Background("bg3_1.png","bg3_2.png");
+  scoringBoard = new ScoringBoard();
+  groundHeight=60;
+  
+   minim=new Minim(this);
+  
+  song=minim.loadFile("music.mp3");
+  song.play();
+  song.loop();
+    
+}
+
+void draw(){
+  switch(gameState){
+    case GAME_START:
+    start.bgDisplay();
+    start.wordDisplay();
+    start.sheepDisplay();
+    break;
+    
+    case GAME_STORY:
+    story.display();
+    break;
+    
+    case GAME_RULE1:
+    rule1.display();
+    break;
+    
+    case GAME_RULE2:
+    rule2.display();
+    break;
+    
+    case GAME_RULE3:
+    rule3.display();
+    break;
+    
+    case GAME_RUN:
+    switch (stage){
+    case STAGE_1:
+    count++;
+    if(level1.showLevel){
+      level1.display();
+    }else{
+      background1.display();
+      obstacles.display();
+      obstacles.move();
+      if(jones.alive()){
+        jones.getStuck();
+        jones.display();
+        jones.backToPosition();
+        jones.capture();
+      }
+      jones.falling();
+      
+      for(int i=0; i<sheeps.length; i++){
+      if(sheeps[i].alive()){
+        sheeps[i].display();
+        sheeps[i].move();
+        sheeps[i].followJones();
+      }
+      if(sheeps[i].alive()==false){
+        sheeps[i].sheepBeSubtracted = true;
+      }
+      sheeps[i].falling();
+      }
+      
+      scoringBoard.showSheepNum();
+      scoringBoard.sheepNumChange();
+    }
+      if(count == 3360){
+        if(scoringBoard.sheepNum <6){
+          gameState = GAME_FAIL;
+          scoringBoard.reset();
+          for(int i=0; i<sheeps.length; i++){
+          sheeps[i].reset((i+1)*1400);}
+          stage=STAGE_1;
+          count =0;
+          level1.showLevel = true;
+          return;
+        }
+        scoringBoard.reset();
+        for(int i=0; i<sheeps.length; i++){
+        sheeps[i].reset((i+1)*1400);}
+        stage=STAGE_2;
+        count =0;}
+    break;
+    
+    case STAGE_2:
+    level2.showLevel = true;
+     count++;
+     if(level2.showLevel){
+      level2.display();
+    }else{
+      background2.display();
+      obstacles.display();
+      obstacles.move();
+      if(jones.alive()){
+        jones.getStuck();
+        jones.display();
+        jones.backToPosition();
+        jones.capture();
+      }
+      jones.falling();
+      
+      for(int i=0; i<sheeps.length; i++){
+      if(sheeps[i].alive()){
+        sheeps[i].display();
+        sheeps[i].move();
+        sheeps[i].followJones();
+      }
+      if(sheeps[i].alive()==false){
+        sheeps[i].sheepBeSubtracted = true;
+      }
+      sheeps[i].falling();
+      }
+      
+      scoringBoard.showSheepNum();
+      scoringBoard.sheepNumChange();
+    }
+      if(count == 3360){
+        scoringBoard.reset();
+        for(int i=0; i<sheeps.length; i++){
+        sheeps[i].reset((i+1)*1400);}
+        stage=STAGE_3;
+        count =0;}
+    break;
+    case STAGE_3:
+    level3.showLevel = true;
+    count++;
+     if(level3.showLevel){
+      level3.display();
+    }else{
+      background3.display();
+      obstacles.display();
+      obstacles.move();
+      if(jones.alive()){
+        jones.getStuck();
+        jones.display();
+        jones.backToPosition();
+        jones.capture();
+      }
+      jones.falling();
+      
+      for(int i=0; i<sheeps.length; i++){
+      if(sheeps[i].alive()){
+        sheeps[i].display();
+        sheeps[i].move();
+        sheeps[i].followJones();
+      }
+      if(sheeps[i].alive()==false){
+        sheeps[i].sheepBeSubtracted = true;
+      }
+      sheeps[i].falling();
+      }
+      
+      scoringBoard.showSheepNum();
+      scoringBoard.sheepNumChange();
+    }
+      if(count == 3360){
+        scoringBoard.reset();
+        for(int i=0; i<sheeps.length; i++){
+        sheeps[i].reset((i+1)*1400);}
+        gameState= GAME_END;
+        count =0;}
+    break;}
+    break;
+    case GAME_FAIL:
+      lose.display();
+      if(lose.showLose2 && mousePressed){
+        gameState = GAME_RUN;
+        if(stage == STAGE_1){
+          stage = STAGE_1;
+        }
+        if(stage == STAGE_2){
+          stage = STAGE_2;
+        }
+        if(stage == STAGE_3){
+          stage = STAGE_3;
+        }
+      }
+    break;
+    case GAME_END:
+    break;
+
+  }
+}
+
+void keyPressed(){
+  if(key==ENTER){
+    jones.jump();
+  }
+}
+
+
+boolean isCollide(float ax, float ay, int aw, int ah, float bx, float by, int bw, int bh) {
+  boolean collisionX = (ax + aw >= bx) && (bx + bw >= ax);
+  boolean collisionY = (ay + ah >= by) && (by + bh >= ay);
+  if (collisionX && collisionY) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void mouseReleased(){
+    if(start.showSheep2){
+      gameState = GAME_STORY;
+    }
+    if(story.showStory2){
+      gameState = GAME_RULE1;
+    }
+    if(rule1.showRule1_2){
+      gameState = GAME_RULE2;
+    }
+    if(rule2.showRule2_2){
+      gameState = GAME_RULE3;
+    }
+    if(rule3.showRule3_2){
+      gameState = GAME_RUN;
+    }
+}
